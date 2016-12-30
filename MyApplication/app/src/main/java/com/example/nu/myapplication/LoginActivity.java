@@ -4,6 +4,8 @@ import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
 import com.facebook.AccessToken;
@@ -28,14 +30,14 @@ public class LoginActivity extends AppCompatActivity {
     private CallbackManager callbackManager;
     private AccessTokenTracker accessTokenTracker;
     private ProfileTracker profileTracker;
-
+    private Button signupButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         FacebookSdk.sdkInitialize(getApplicationContext());
         setContentView(R.layout.activity_login);
-
+        initButton();
         callbackManager = CallbackManager. Factory.create();
         accessTokenTracker = new AccessTokenTracker() {
             @Override
@@ -46,7 +48,7 @@ public class LoginActivity extends AppCompatActivity {
         profileTracker = new ProfileTracker() {
             @Override
             protected void onCurrentProfileChanged(Profile oldProfile, Profile newProfile) {
-                nextActivity(newProfile);
+                nextFacebookActivity(newProfile);
             }
         };
         accessTokenTracker.startTracking();
@@ -82,7 +84,8 @@ public class LoginActivity extends AppCompatActivity {
                 parameters.putString("fields", "id,name,email,gender, birthday");
                 request.setParameters(parameters);
                 request.executeAsync();
-                nextActivity(profile);
+                nextActivity();
+               // nextFacebookActivity(profile);
                 Toast.makeText(getApplicationContext(), "Logging in...", Toast.LENGTH_SHORT).show();    }
 
             @Override
@@ -101,7 +104,7 @@ public class LoginActivity extends AppCompatActivity {
         super.onResume();
         //Facebook login
         Profile profile = Profile.getCurrentProfile();
-        nextActivity(profile);
+        nextFacebookActivity(profile);
     }
 
     @Override
@@ -109,7 +112,15 @@ public class LoginActivity extends AppCompatActivity {
 
         super.onPause();
     }
-
+    public void initButton(){
+        signupButton = (Button) findViewById(R.id.signup);
+        signupButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                nextActivity();
+            }
+        });
+    }
     protected void onStop() {
         super.onStop();
         //Facebook login
@@ -124,7 +135,11 @@ public class LoginActivity extends AppCompatActivity {
         callbackManager.onActivityResult(requestCode, responseCode, intent);
 
     }
-    private void nextActivity(Profile profile){
+    private void  nextActivity(){
+        Intent main = new Intent(LoginActivity.this,MyChildrenActivity.class);
+        startActivity(main);
+    }
+    private void nextFacebookActivity(Profile profile){
         if(profile != null){
             Intent main = new Intent(LoginActivity.this, MainActivity.class);
             main.putExtra("name", profile.getFirstName());
@@ -133,5 +148,6 @@ public class LoginActivity extends AppCompatActivity {
             startActivity(main);
         }
     }
+
 
 }
